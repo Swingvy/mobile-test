@@ -2,8 +2,12 @@
  * @format
  */
 
-import {AppRegistry} from 'react-native';
-import App from './App';
-import {name as appName} from './app.json';
+import { AppRegistry } from "react-native";
+import Navigator from "./src/navigator";
+import { setI18nConfig } from "./src/i18n";
+import { name as appName } from "./app.json";
 
-AppRegistry.registerComponent(appName, () => App);
+// set I18nConfig
+setI18nConfig();
+
+AppRegistry.registerComponent(appName, () => Navigator);
