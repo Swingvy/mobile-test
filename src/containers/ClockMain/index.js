@@ -1,4 +1,4 @@
-import React, { Fragment } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import {
   Image,
   SafeAreaView,
@@ -8,7 +8,11 @@ import {
   View,
   FlatList
 } from "react-native";
+import Geolocation from "@react-native-community/geolocation";
+
 import I18n from "i18n-js";
+
+import { getMapData } from "../../api";
 
 import { SETTINGS_SCREEN } from "../../navigator/routes";
 
@@ -39,6 +43,44 @@ const getCurrentTime = () => {
   };
 };
 
+const settingRange = "1m";
+const OUT_OF_RANGE = "Out of Range";
+const CLOCK_IN = "Clock In";
+const CLOCK_OUT = "Clock Out";
+
+const distantStatus = [
+  {
+    key: 1,
+    status: OUT_OF_RANGE
+  },
+  {
+    key: 2,
+    status: CLOCK_IN
+  },
+  {
+    key: 3,
+    status: CLOCK_OUT
+  }
+];
+
+const StatusButton = ({ status }) => {
+  return (
+    <TouchableOpacity
+      style={{
+        borderRadius: 20,
+        borderWidth: 5,
+        width: 300,
+        height: 50,
+        justifyContent: "center",
+        alignItems: "center"
+      }}
+      onPress={() => {}}
+    >
+      <Text style={{ fontSize: 20 }}>{status}</Text>
+    </TouchableOpacity>
+  );
+};
+
 const getGpsStatus = true;
 
 const GpsTrackingItem = ({ currentDate, locationAddress }) => {
@@ -51,11 +93,7 @@ const GpsTrackingItem = ({ currentDate, locationAddress }) => {
 };
 
 const ClockMain = ({ navigation }) => {
-  const getGpsStatusText = getGpsStatus
-    ? I18n.t("gpsEnabled")
-    : I18n.t("gpsNotEnabled");
-  const { currentTime, timeType } = getCurrentTime();
-  const gpsData = [
+  const timeAndAddressList = [
     {
       key: "1",
       currentDate: new Date(),
@@ -87,6 +125,40 @@ const ClockMain = ({ navigation }) => {
       locationAddress: "83 Uisadong-daero, Yeoeuido-dong, Seoul"
     }
   ];
+
+  const [currentPosition, setCurrentPosition] = useState({
+    latitude: "",
+    longitude: "",
+    status: OUT_OF_RANGE,
+    locationList: timeAndAddressList
+  });
+
+  const swingvyLatitude = 127.03660330000001;
+  const swingvyLongitude = 37.4852588;
+
+  useEffect(() => {
+    Geolocation.getCurrentPosition(info => {
+      const { coords } = info;
+      const { latitude, longitude } = coords;
+      console.log({ latitude, longitude });
+      getMapData({
+        longitude: longitude,
+        latitude: latitude
+      }).then(mapInfo => {
+        console.log(mapInfo);
+        setCurrentPosition({
+          ...currentPosition,
+          latitude,
+          longitude
+        });
+      });
+    });
+  }, []);
+
+  const getGpsStatusText = getGpsStatus
+    ? I18n.t("gpsEnabled")
+    : I18n.t("gpsNotEnabled");
+  const { currentTime, timeType } = getCurrentTime();
 
   return (
     <Fragment>
@@ -143,8 +215,8 @@ const ClockMain = ({ navigation }) => {
         >
           <View>
             <Text>Current position</Text>
-            <Text>Latitude: 6.937333.</Text>
-            <Text>Latitude: 6.937333.</Text>
+            <Text>Latitude: {currentPosition.latitude}</Text>
+            <Text>Longitude: {currentPosition.longitude}</Text>
           </View>
           <View style={{ marginLeft: 10, marginRight: 10 }}>
             <Image
@@ -166,24 +238,12 @@ const ClockMain = ({ navigation }) => {
             marginBottom: 30
           }}
         >
-          <TouchableOpacity
-            style={{
-              borderRadius: 20,
-              borderWidth: 5,
-              width: 300,
-              height: 50,
-              justifyContent: "center",
-              alignItems: "center"
-            }}
-            onPress={() => {}}
-          >
-            <Text style={{ fontSize: 20 }}>Out of Range</Text>
-          </TouchableOpacity>
+          <StatusButton status={currentPosition.status} />
         </View>
         <View style={{ marginLeft: 20, marginRight: 20, flex: 1 }}>
           <Text style={{ marginBottom: 20 }}>Recent clocking history</Text>
           <FlatList
-            data={gpsData}
+            data={currentPosition.locationList}
             renderItem={({ item }) => <GpsTrackingItem {...item} />}
           />
         </View>
