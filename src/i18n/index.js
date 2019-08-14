@@ -2,10 +2,16 @@ import i18n from "i18n-js";
 
 const translations = {
   en: {
-    hello: "hi"
+    hello: "hi",
+    settings: "settings",
+    gpsNotEnabled: "GPS is not enabled",
+    gpsEnabled: "GPS is enabled"
   },
   ko: {
-    hello: "안녕"
+    hello: "안녕",
+    settings: "설정",
+    gpsNotEnabled: "GPS is not enabled",
+    gpsEnabled: "GPS is enabled"
   }
 };
 

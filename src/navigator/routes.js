@@ -1,0 +1,2 @@
+export const CLOCK_MAIN_SCREEN = "CLOCK_MAIN_SCREEN";
+export const SETTINGS_SCREEN = "SETTINGS";
